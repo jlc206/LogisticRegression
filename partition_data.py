@@ -1,3 +1,4 @@
+import random
 import numpy as np
 
 def create_folds(data, n): 
@@ -31,16 +32,30 @@ def create_folds(data, n):
 #     print_amt_in_each_bin(data, folds)
             
     return folds
+
+def bootstrap_sampling(data, x, seed):
+    '''given the data dictionary, x% and a value to use for the random number seed (so results
+    are reproducible), returns testing sets x/y which is x% of the data, randomly chosen, and
+    training sets x/y which is everything else'''
     
+    testing_targets = []
+    training_targets = []
+    
+    targets = list(data.keys())
+    sample_size = int(round(float(x)/100 * len(targets)))
+    random.seed(seed) #for reproducibility
+    indices = random.sample(xrange(len(targets)), sample_size)
+    for index in sorted(indices, reverse=True): #remove indices in reverse order
+        testing_targets.append(targets.pop(index))
+    training_targets = targets #the ones that are left
+    
+#     print_testing_and_training(testing_targets, training_targets)
+    
+    return assemble_data(data, testing_targets, training_targets)
 
 def split_into_sets(data, folds, withheld_fold):
     '''returns testing sets x/y and training sets x/y given the target names split into folds 
     and the int value of the fold to withhold (as the testing set)'''
-    
-    train_x = []
-    train_y = []
-    test_x = []
-    test_y = []
     
     folds = list(folds)
     testing_targets = folds.pop(withheld_fold)
@@ -48,6 +63,15 @@ def split_into_sets(data, folds, withheld_fold):
     
 #     print_testing_and_training(testing_targets, training_targets)
     
+    return assemble_data(data, testing_targets, training_targets)
+
+def assemble_data(data, testing_targets, training_targets):
+
+    train_x = []
+    train_y = []
+    test_x = []
+    test_y = []
+
     for target in training_targets:
         targetdata_x = data[target]['x']
         targetdata_y = data[target]['y']
@@ -109,8 +133,8 @@ def print_amt_in_each_bin(data, folds):
         
 def print_testing_and_training(testing_targets, training_targets):
     '''prints names of all targets in current testing set and all targets in current training set'''
-    print "TESTING TARGETS:", testing_targets
-    print "TRAINING TARGETS:", training_targets
+    print str(len(testing_targets)) + " TESTING TARGETS:", testing_targets
+    print str(len(training_targets)) + " TRAINING TARGETS:", training_targets
     
 
     
