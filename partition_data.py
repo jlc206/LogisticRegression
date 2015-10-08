@@ -32,6 +32,12 @@ def create_folds(data, n):
 #     print_amt_in_each_bin(data, folds)
             
     return folds
+    
+def leave_one_target_out(data, targetnum):
+    targets = list(data.keys())
+    left_out = [targets.pop(targetnum)]
+    return assemble_data(data, left_out, targets) #leftout is testing targ, rest of targets are training
+
 
 def bootstrap_sampling(data, x, seed):
     '''given the data dictionary, x% and a value to use for the random number seed (so results
@@ -66,7 +72,9 @@ def split_into_sets(data, folds, withheld_fold):
     return assemble_data(data, testing_targets, training_targets)
 
 def assemble_data(data, testing_targets, training_targets):
-
+    '''given the data dictionary, a list of testing target names, and a list of training target
+    names, return 4 lists: train_x, train_y, test_x, test_y'''
+    
     train_x = []
     train_y = []
     test_x = []
@@ -113,6 +121,8 @@ def create_dict(file):
     for target in data: #convert to numpy
         data[target]['x'] = np.array(data[target]['x'], np.float64)
         data[target]['y'] = np.array(data[target]['y'])
+    
+    data.pop("fgfr1", None) #throw out this target bc no neg data
         
     return data
     
